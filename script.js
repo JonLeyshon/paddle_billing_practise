@@ -9,16 +9,6 @@ var proProduct = "pro_01k65jg8pgz1prpq13jzq1z0zk";
 var monthItems = [
   {
     quantity: 1,
-    priceId: "pri_01k65k6px30xq1s4m1ffyfqb7x",
-  },
-  {
-    quantity: 1,
-    priceId: "pri_01k65jx1dk3htcrbd2ppp9j76d",
-  },
-];
-var yearItems = [
-  {
-    quantity: 1,
     priceId: "pri_01k65jfq4a2z34ak04ve0ghyzp",
   },
   {
@@ -26,10 +16,22 @@ var yearItems = [
     priceId: "pri_01k65jhp014jyt08r6981f3v4y",
   },
 ];
+var yearItems = [
+  {
+    quantity: 1,
+    priceId: "pri_01k65k6px30xq1s4m1ffyfqb7x",
+  },
+  {
+    quantity: 1,
+    priceId: "pri_01k65jx1dk3htcrbd2ppp9j76d",
+  },
+];
 
 // DOM queries
 var starterPriceLabel = document.getElementById("starter-price");
 var proPriceLabel = document.getElementById("pro-price");
+const monthlyBtn = document.getElementById("monthlyBtn");
+const yearlyBtn = document.getElementById("yearlyBtn");
 
 /// set initial billing cycle
 var billingCycle = "year";
@@ -39,6 +41,8 @@ var billingCycle = "year";
 function getPrices(cycle) {
   var itemsList = cycle === "month" ? monthItems : yearItems;
   var billingCycle = cycle;
+  monthlyBtn.classList.toggle("bg-white", cycle === "month");
+  yearlyBtn.classList.toggle("bg-white", cycle === "year");
   var request = {
     items: itemsList,
   };
