@@ -9,10 +9,48 @@ export default function Home() {
   const [starterPrice, setStarterPrice] = useState<string>("");
   const [proPrice, setProPrice] = useState<string>("");
 
+  // define products and prices
+  const starterProduct: string = "pro_01k65jdxx468sjhcsratynbphx";
+  const proProduct: string = "pro_01k65jg8pgz1prpq13jzq1z0zk";
+  const monthItems: PaddleCheckoutItem[] = [
+    {
+      quantity: 1,
+      priceId: "pri_01k65jfq4a2z34ak04ve0ghyzp",
+    },
+    {
+      quantity: 1,
+      priceId: "pri_01k65jhp014jyt08r6981f3v4y",
+    },
+  ];
+  const yearItems: PaddleCheckoutItem[] = [
+    {
+      quantity: 1,
+      priceId: "pri_01k65k6px30xq1s4m1ffyfqb7x",
+    },
+    {
+      quantity: 1,
+      priceId: "pri_01k65jx1dk3htcrbd2ppp9j76d",
+    },
+  ];
+
+  const CONFIG = {
+    clientToken: "test_240df8400557075dffe82cf9649",
+    prices: {
+      starter: {
+        month: monthItems[0],
+        year: yearItems[0],
+      },
+      pro: {
+        month: monthItems[1],
+        year: yearItems[1],
+      },
+    },
+  };
+
   useEffect(() => {
     const initialize = async () => {
       const instanceOfPaddle = await initializePaddle({
-        token: process.env.CLIENT_TOKEN,
+        token: CONFIG.clientToken,
       });
 
       setPaddle(instanceOfPaddle ?? null);
@@ -27,30 +65,7 @@ export default function Home() {
     getPrices("year");
   }, [paddle]);
 
-  // define products and prices
-  const starterProduct: string = "pro_01k65jdxx468sjhcsratynbphx";
-  const proProduct: string = "pro_01k65jg8pgz1prpq13jzq1z0zk";
-  const monthItems: PaddleCheckoutItem[] = [
-    {
-      quantity: 1,
-      priceId: "pri_01k65jfq4a2z34ak04ve0ghyzp",
-    },
-    {
-      quantity: 1,
-      priceId: "pri_01k65jhp014jyt08r6981f3v4y",
-    },
-  ];
-  var yearItems: PaddleCheckoutItem[] = [
-    {
-      quantity: 1,
-      priceId: "pri_01k65k6px30xq1s4m1ffyfqb7x",
-    },
-    {
-      quantity: 1,
-      priceId: "pri_01k65jx1dk3htcrbd2ppp9j76d",
-    },
-  ];
-
+  // Update prices on subscription toggle
   function getPrices(cycle: "month" | "year") {
     const itemsList = cycle === "month" ? monthItems : yearItems;
     setBillingCycle(cycle);
@@ -63,6 +78,7 @@ export default function Home() {
       .then((result: { data: any }) => {
         console.log(result);
 
+        //loop through results to set prices.
         const items = result.data.details.lineItems;
         for (const item of items) {
           if (item.product.id === starterProduct) {
@@ -78,6 +94,33 @@ export default function Home() {
         console.error(error);
       });
   }
+
+  // Open checkout
+  function openCheckout(plan: "starter" | "pro") {
+    if (!paddle) {
+      console.log("Paddle not initialized yet");
+      return;
+    }
+
+    try {
+      paddle.Checkout.open({
+        items: [
+          {
+            priceId: CONFIG.prices[plan][billingCycle].priceId,
+            quantity: 1,
+          },
+        ],
+        settings: {
+          theme: "light",
+          displayMode: "overlay",
+          variant: "one-page",
+        },
+      });
+    } catch (error) {
+      console.error(`Checkout error: ${error.message}`);
+    }
+  }
+
   return (
     <>
       {/* <!-- Pricing Container --> */}
@@ -122,7 +165,7 @@ export default function Home() {
               <span className="text-gray-500 ml-1">/month</span>
             </div>
             <button
-              // onClick="openCheckout('starter')"
+              onClick={() => openCheckout("starter")}
               className="w-full bg-green-500 text-white rounded-lg px-4 py-2 hover:bg-green-700 transition-colors"
             >
               Get started
@@ -141,7 +184,10 @@ export default function Home() {
               </span>
               <span className="text-gray-500 ml-1">/month</span>
             </div>
-            <button className="w-full bg-green-500 text-white rounded-lg px-4 py-2 hover:bg-green-700 transition-colors">
+            <button
+              className="w-full bg-green-500 text-white rounded-lg px-4 py-2 hover:bg-green-700 transition-colors"
+              onClick={() => openCheckout("pro")}
+            >
               Get started
             </button>
           </div>
